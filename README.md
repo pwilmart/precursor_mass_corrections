@@ -54,11 +54,11 @@ Monocle is the new kid on the block and was probably developed to facilitate rea
 
 The paper used Comet searches with a 50 PPM parent ion mass tolerance, tryptic cleavage, variable oxidation of Met, and static alkylation of Cys. The 178K spectra were searched with and without monocle pre-processing. Monocle does isotopic envelope modeling based on averagine. It is not clear how (if) modeling of multiple precursors is handled or if a single corrected monoisotopic mass is computed for each MS2 scan. Regardless, monocle pre-processed data resulted in 81% more PSMs.
 
-## PAW processing
+## [PAW processing](https://github.com/pwilmart/PAW_pipeline)
 
 The wide tolerance PAW searches identify deamidation and M1 triggers without having to specify those as search parameters. Every PAW analysis generates deltamass histograms for 2+, 3+, and 4+ peptides. Windows on deltamass peaks are used to create conditioned score histograms for peptides by charge state, number of tryptic termini, and by modification state.
 
-Basic pipeline steps:
+**Basic pipeline steps:**
 
 - Convert RAW files with MSConvert
 - Run Comet search engine
@@ -70,7 +70,7 @@ Basic pipeline steps:
 
 The histogram-based FDR analysis is unique to the PAW pipeline and incorporates a great deal of quality control information naturally into the workflow. Instead of a target/decoy score distribution figure made once for the paper describing a tool, deltamass and score visualizations are integrated into the PAW workflow for every analysis.
 
-Histogram-based FDR steps:
+**Histogram-based FDR steps:**
 - Read top-hit summary files
 - Filter top-hits by charge (2-4) and length (>7)
 - Compute deltamass histograms
@@ -90,9 +90,9 @@ Histogram-based FDR steps:
   - Usually 1% FDR in all subclasses
 - Scans passing thresholds are written to new filtered top-hit files
 
-Here is some of the quality control information that is immediately apparent:
+This is some of the quality control information that is always available:
 
-- Mass calibration errors. Good data will have a single, narrow deltamass target peak centered at 0-Da. Sytematic errors will have the peak shifted away from 0-Da. Data in batches may have slighly different mass calibration errors and the single peak may be wider or be multiple peaks. Data where the lock mass correction is failing intermittently will also have a doublet peak.
+- Mass calibration errors. Good data will have a single, narrow deltamass target peak centered at 0-Da. Sytematic errors will have the peak shifted away from 0-Da. Data in batches may have slighly different mass calibration errors and the single peak may be wider or be multiple peaks. Data where the lock mass correction is failing intermittently may also have a doublet peak.
 
 - How much deamidation and M1 triggering can be seen in the 1-Da region. Typical Orbitrap survey scan resolutions will resolve these two peaks (0.984 Da and 1.008 Da). It is very unlikely that incorrect peptide sequences will be assigned to peptides with 1-Da mass shifts in wide tolerance searches.
 
@@ -100,27 +100,27 @@ Here is some of the quality control information that is immediately apparent:
 
 - Presence or absence of correct matches in any peptide subclass are trivial to determine. This can be useful to see if the samples had any actual protein (amazingly, some experiments do not work or your instrument may be in the crapper). It can also be handy to verify specific PTMs. Note: the approach used in PAW does not scale well to more complicated search strategies.
 
-- Identifications by charge state and overall ID rates can be determined.
+- Identification rates by charge state and overall ID rates can be determined.
 
 ## Back to the yeast data
 
-My [PAW pipeline](https://github.com/pwilmart/PAW_pipeline) uses Comet, a PeptideProphet-like discriminant function, the target/decoy method for FDR control, and a visual histogram-based score threshold workflow. I configured a 50 PPM search with similar parameters as were used in the paper. I also did my recommended 1.25 Da wide parent ion mass tolerance search. I did not run PAW on any monocle pre-processed data. The numbers of PSMs identified at 1% FDR are given in the table below.
+My pipeline uses [Comet](https://analyticalsciencejournals.onlinelibrary.wiley.com/doi/full/10.1002/pmic.201200439?casa_token=Z-eaugqi5FsAAAAA%3AvoMDHcIm0110hMJeAXzQ9Op7ZDYOwK3xbr4xh4o6xzvSeKOFfdqEk3wp84A63eAPUngHjYlSqePX), a [PeptideProphet-like discriminant function](https://pubs.acs.org/doi/abs/10.1021/ac025747h?casa_token=44xQl90kyMoAAAAA%3Am8LcQavleMRSnki_M90GbL7pO_wf1kZCLp5Nq-42AmIp00e2_wzFRXmpC0pmzaOeNeEAEMRrQcf4pQ&), the [target/decoy method](https://www.nature.com/articles/nmeth1019) for FDR control, and a visual histogram-based score threshold workflow. I configured a 50 PPM search with similar parameters as were used in the Monocle paper. I also performed a 1.25 Da wide parent ion mass tolerance search. I did not run PAW on any monocle pre-processed data. The numbers of PSMs identified at 1% FDR are given in the table below (comma is the thousands separator).
 
 What|Count|Gain
 ----|-----|----
-Total MS2 Scans|178377|
-PSMs: 1% FDR, 50 ppm, paper|43008|0%
-PSMs after monocle|77859|81%
-PSMs: 1% FDR, 50 ppm, PAW|45079|5%
-PSMs: 1% FDR, 1.25 Da, PAW|65460|52%
+Total MS2 Scans|178,377|
+PSMs: 1% FDR, 50 ppm, paper|43,008|0%
+PSMs after monocle|77,859|81%
+PSMs: 1% FDR, 50 ppm, PAW|45,079|5%
+PSMs: 1% FDR, 1.25 Da, PAW|65,460|52%
 
 The PAW processing had 5% more IDs at 50 PPM compared to the Gygi Lab in-house software. Despite an unoptimized discriminant function that is very similar to the original PeptideProphet model from 2001, the approach in the PAW workflow of setting deltamass conditioned score distributions for peptides in subclasses is a pretty sensitive peptide ID framework.
 
-Interestingly, using a wide parent ion mass tolerance in PAW with exactly the same starting data was able to increase identified PSMs by 52% compared to 50 PPM. In the 50 PPM searches, the option to try isotopic errors was not used. Deamidation was also not specified as a PTM. The only change in the Comet parameters was the parent ion tolerance. It seems that parent ion mass corrections are not necessary to dramatically increase PSM counts. Maybe the problem is not parent ion masses but the 50 PPM narrow tolerance search choice.
+Interestingly, using a wide parent ion mass tolerance in PAW with exactly the same starting data increased identified PSMs by 52% compared to 50 PPM. In the 50 PPM searches, the option to try isotopic errors was not used. Deamidation was also not specified as a PTM. The only change in the Comet parameters was the parent ion tolerance. It seems that parent ion mass corrections are not necessary to dramatically increase PSM counts. Maybe the problem is not parent ion masses but the narrow tolerance search choice.
 
 ## Time to get into the weeds
 
-In the yeast data 98% of the IDs are 2+ and 3+ peptides; only 2% of the IDs are 4+ peptides. The 2+ to 3+ ratio is about 2 to 1 (pretty typical for trypsin digests). Here are the full-range deltamass histograms for the 1.25 Da search.
+In the yeast data, 98% of the IDs are 2+ and 3+ peptides; only 2% of the IDs are 4+ peptides. The 2+ to 3+ ratio is about 2 to 1 (pretty typical for trypsin digests). Here are the full-range deltamass histograms for the 1.25 Da search.
 
 ![deltamasses](images/yeast/deltamass_windows.png)
 
@@ -128,13 +128,13 @@ Target matches are in blue and decoy matches are in red. We see the sharp peak a
 
 The overall fraction of PSMs associated with the M1 peak is 22% across the 3 charge states. This represents kind of an upper limit on how much a parent ion correction algorithm could gain due to monoisotopic mass miss-calls. Note that I did not try a 2.5 Da search to see if the M2 triggers are appreciable. One would expect them to be significantly reduced compared to M1 triggers (maybe a few percent).
 
-Narrow windows around the two peak regions (for each charge state) were set and three collections of conditioned histograms generated for the 0-Da peak, the 1-Da peak(s), and any deltamasses outside of these two windows. Here are the score distributions for the 0-Da and 1-Da unmodified peptides (the oxidized methionine distributions are similar but have fewer counts and are not shown).
+Narrow windows around the two peak regions (for each charge state) were set and three collections of conditioned histograms generated for the 0-Da peak, the 1-Da peak(s), and any deltamasses outside of these two windows. Here are the score distributions for the 0-Da and 1-Da unmodified peptides (the oxidized methionine distributions are similar but have fewer counts and are not shown here [they are shown at the bottom of this file]).
 
 ![main scores](images/yeast/main_score_distributions.png)
 
-Again, the decoy distribution is in read and the two-distribution target matches in blue. The dotted lines are the 1% FDR threshold locations. The 50 PPM search results are on the left. The two 1.25 Da results are on the right. We do not have any 1-Da peaks in the 50-PPM search, just the 0-Da peak. In the 1.25 Da search, we have both deltamass regions. We see that the relative noise level is higher for the 1-Da region compared to the 0-Da region for the 1.25 Da search.
+Again, the decoy distribution is in red and the two-distribution target matches are in blue. The dotted lines are the 1% FDR threshold locations. The 50 PPM search results are on the left. The two 1.25 Da results are on the right. We do not have any 1-Da peaks in the 50-PPM search, just the 0-Da peak. In the 1.25 Da search, we have both deltamass regions. We see that the relative noise level is higher for the 1-Da region compared to the 0-Da region in the 1.25 Da search.
 
-This is where counting identified PSMs as an indirect way to evaluate parent ion mass corrections rears its ugly head. I talk about how FDR control and overlap between the two distributions and their relative magnitudes are all intertwined like the computer cables under your desk in [this repository](https://github.com/pwilmart/score_distributions_FDR). If you have not looked at that, you might want to give it a quick skim before reading on. The 50 PPM score distributions have larger red distributions than the 0-Da histograms for the 1.25 Da search. The score threshold have to be increased (they are near 3.0) and correct ID recovery decreases some. We also have all of the M1 triggers that we can ID in the 1.25 Da search that are excluded in the basic 50 PPM search.
+This is where counting identified PSMs as an indirect way to evaluate parent ion mass corrections rears its ugly head. I talk about how FDR control, overlap between the two distributions, and their relative magnitudes are all intertwined like the computer cables under your desk in [this repository](https://github.com/pwilmart/score_distributions_FDR). If you have not looked at that, you might want to give it a quick skim before reading on. The 50 PPM score distributions have larger red distributions than the 0-Da histograms for the 1.25 Da search. The score threshold have to be increased (they are near 3.0) and correct ID recovery decreases some. We also have all of the M1 triggers that we can ID in the 1.25 Da search that are excluded in the basic 50 PPM search.
 
 We also have some peptide IDs where we did not have a deltamass around 0-Da or 1-Da.
 
@@ -142,23 +142,25 @@ We also have some peptide IDs where we did not have a deltamass around 0-Da or 1
 
 It is human nature to want to ignore those. We paid big money for that Orbitrap and every ion better have a gosh darn accurate mass or we are sending that box back to Thermo... Your data may have some thoughts on that and maybe we should listen to the data. After all, the mass spec never lies. Again, we have decoy match scores in red and target match scores in blue. We see that the decoy random error model matches the incorrect target distribution very well. We also see that we do in fact have a lot of IDs that do not have an accurate mass.
 
-We could come up with a list of unsupported speculations as to why that might be. I think that the most likely thing that is going on here where a complex proteome is being separated in a single LC run, is co-isolated co-eluting peptides (of the same charge state). The instrument assigns a parent ion mass to the MS2 spectrum based on its algorithms (how it picks monoisotopic peaks and dynamic exclusion). That call may not jibe with the fragment ions that produce the highest Comet scores. When we have a wide parent ion mass tolerance, we can sample more theoretical peptides and find better scoring matches.
+We could come up with a list of unsupported speculations as to why that might be. I think that the most likely thing that is going on here, where a complex proteome is being separated in a single LC run, is co-isolated co-eluting peptides (of the same charge state). The instrument assigns a parent ion mass to the MS2 spectrum based on its algorithms (how it picks monoisotopic peaks and does dynamic exclusion). The monoisotopic mass call may not jibe with the fragment ions that produce the highest Comet scores. When we have a wide parent ion mass tolerance, we can sample more theoretical peptides and find better scoring matches. What ever peptide scores best will be the top hit whether it has accurate mass agreement with the precursor call or not.
 
-There is more going on here, though. We have far fewer "extra" IDs from the 50 PPM search compared to the 1.25 Da search. We also have differences in the score distribution shapes. With 50 PPM, we have a more right-hand-tailed red distribution. That pushes the score threshold up to over 6.0. In the 1.25 Da search, the threshold is around 4.0. This could be that the 50 PPM search is coercing incorrect sequences onto higher quality MS2 spectra resulting in atypically high scoring decoy matches. It can also be partly due to 50 PPM tolerances having few scored peptides for some m/z values. The discriminant function used in PAW has a heavy weighting on the deltaCN term, which can be erratic when there are few scored peptides. This effect is hit and miss as many m/z values will have many matches and some will have small numbers. What ever the reasons, narrow tolerance searches do not recover the inaccurate mass matches as well as wide tolerance searches.
+There is more going on here, though. We have far fewer "extra" IDs from the 50 PPM search compared to the 1.25 Da search. We also have differences in the score distribution shapes. With 50 PPM, we have a more right-hand-tailed red distribution. That pushes the score threshold up to over 6.0. In the 1.25 Da search, the threshold is around 4.0. This could be that the 50 PPM search is coercing incorrect sequences onto higher quality MS2 spectra resulting in atypically high scoring decoy matches. It can also be partly due to 50 PPM tolerances having few scored peptides for some m/z values. The discriminant function used in PAW has a heavy weighting on the deltaCN term, which can be erratic when there are few scored peptides. This effect is hit and miss as many m/z values will have many matches and some will have small numbers of matches. What ever the reasons, narrow tolerance searches do not recover the inaccurate mass matches as well as wide tolerance searches do.
 
 ## Wrap time
 
-I did not run monocle on the data and process that with my pipeline (I do not have unlimited time). I think I have made the case that as big a problem as instrument monoisotopic mass mis-calls is using a narrow tolerance search. A wide tolerance search was dramatically better than the narrow tolerance search (keep in mind that some folks think 50 PPM is a wide tolerance...) with about half of the gain coming from M1 triggers. The other half came from better recovery of correct IDs, especially those with larger deltamass differences.
+I did not run monocle on the data and process that with my pipeline (I do not have unlimited time - sorry). I think I have made the case that instrument monoisotopic mass mis-calls is only part of the story. Using a narrow tolerance search is also a big part of the issue (as are co-eluting peptides). A wide tolerance search was dramatically better than the narrow tolerance search (keep in mind that some folks think 50 PPM is a wide tolerance) with about half of the gain coming from M1 triggers. The other half came from better recovery of correct IDs, especially those with larger deltamass differences.
 
-There is much more work that needs to be done to explore this topic. We can change the crowded separation space issue. How to compare a larger separation to single shot is, of course, not simple. You have to be smart to figure out the metrics that are not dependent on the sampling depth difference. There may be questions about whether the correct PSMs are really correct. Co-fragmenting peptides make that challenging. Assigning one sequence one time and another sequence under different conditions could both be correct. Having the same sequence for the same MS2 scan may not be a signature of correctness. I could go one.
+There is much more work that needs to be done to finish exploring this topic. We can reduce the crowded separation space problem with more fractionation. How to compare a larger separation to single shot run is, of course, not simple. You have to be smart to figure out the metrics that are not dependent on the sampling depth difference. There may be questions about whether the correct PSMs are really correct. Co-fragmenting peptides make that challenging. Assigning one sequence one time and another sequence under different conditions could both be correct. Having the same sequence for the same MS2 scan may not be a signature of correctness. Analysis methods that increase PSM count should probably add more PSMs to high and medium abundance proteins. Every confidently identified protein always has additional low abundance, lower scoring peptides. More correct peptides should increase protein coverages.
 
-The work in the papers I listed above is pretty good. The papers are about algorithms to correct MS1 data. They end up mostly confounding how parent ion information, fragment ion spectra, and search engines affect PSM identifications. This is an interesting topic, but it is getting a little far from instrument monoisotopic mass measurments.
+The work in the papers I listed above is pretty good. They do not have any glaring flaws. I do think that they all come up a bit short on the science side. The papers are about algorithms to correct MS1 data. They end up mostly confounding how parent ion information, fragment ion spectra, and search engines affect PSM identifications. This is an interesting topic, but it is getting a little far from how well do mass spectrometers measure monoisotopic masses.
 
-Search engines have options to address many of these issues when performing narrow tolerance searches. I have explored these with the [sea lion urine](https://github.com/pwilmart/Sea_lion_urine_SpC) data but I need more time to complete that work. The urine samples are a much more realistic matrix than yeast digests or HeLa digest. Yeast and HeLa cells are too good to really test things. You could fix the reputation of proteomics overnight by restricting grant funding to studies of yeast and HeLa cells. That could make proteomics so amazingly reproducible that it would be the envy of the rest of experimental science.
+Search engines have options to address many of these issues when performing narrow tolerance searches. I have explored these with the [sea lion urine](https://github.com/pwilmart/Sea_lion_urine_SpC) data but I need more time to complete and share that work. The urine samples are a much more realistic matrix than yeast digests or HeLa digest. Yeast and HeLa cells are too good to really test things. You could fix the reputation of proteomics overnight by restricting grant funding to studies of yeast and HeLa cells. That could make proteomics so amazingly reproducible that it would be the envy of the rest of experimental science.
+
+---
 
 ## Supplemental Baggage
 
-Here are the screen shots from the PAW pipeline in all of their glory (gory?) for both searches for those who just can't get enough of these styling histogram plots.
+Here are the screen shots from the PAW pipeline (for both searches) in all of their glory for those who just can't get enough of these styling histogram plots!
 
 ---
 
@@ -208,5 +210,5 @@ Here are the screen shots from the PAW pipeline in all of their glory (gory?) fo
 
 ---
 
-April 21, 2021
+April 21, 2021 </br>
 Phil Wilmarth
