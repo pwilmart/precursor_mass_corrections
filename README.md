@@ -19,11 +19,11 @@ Instruments can have mass calibration errors. These can be small, systematic err
 
 There is another complication that has become a bigger problem over time. Less peptide separation has been a growing trend. Single shot experiments (one LC run per sample) have gotten more popular as instrument scan speeds have improved. Multi-dimensional peptide separations can be complicated for chromatography alignment algorithms. Shorter LC gradients make for shorter run times and increase throughput. All of these factors make it more likely that isolation windows (selecting ions to fragment) will have multiple peptide species. Older quadrupoles had isolation windows of about 2 Da. Newer instruments can select ions with good transmission at 0.7 Da (or narrower). The isolation windows are still enormous compared to the precursor resolution.
 
-Co-isolation and co-fragmentation is a complicated problem to address. Many times multiple precursors means more than two. The precursors may have the same or different charge states and be are rather different relative intensities. The precursor window and the fragment ion spectra may be more like a DIA experiment than you think.
+Co-isolation and co-fragmentation is a complicated problem to address. Many times multiple precursors means more than two. The precursors may have the same or different charge states and be at rather different relative intensities. The precursor window and the fragment ion spectra may be more like a DIA experiment than you think.
 
-This is also coupled with dynamic exclusion. Dynamic exclusion used to be a real sledge hammer for driving finish nails. It was not too long ago that -1 Da to +4 Da were the kinds of dynamic exclusion windows that were blacked out after taking an MS2 scan. You could easily have more than half of the m/z space being excluded with fast scanning instruments. It was also very dynamic as masses go on and off of the exclusion list in rapid order.
+This is also coupled with dynamic exclusion. Dynamic exclusion used to be a real sledge hammer for driving finish nails. It was not too long ago that -1 Da to +4 Da were the kinds of dynamic exclusion windows that were blacked out after taking an MS2 scan. You could easily have more than half of the m/z space being excluded with fast scanning instruments. It was also very dynamic as masses went on and off of the exclusion list in rapid order (every 30 seconds is common).
 
-Now the dynamic exclusion is high res with plus/minus 20 PPM in notches over the isotopic envelope. For this to work, the instrument has to be able to determine an isotopic envelope with some fidelity. An M1 trigger does not really affect this, but the charge state call is important. Since the instrument can exclude a precursor with pretty tight mass tolerances, a very similar mass peptide could be selected for an MS2 scan while an excluded peptide is still present. The instrument might co-isolate multiple precursors on purpose. The better dynamic exclusion works, the more problematic data you collect. You can get multiple precursors isolated together. You can get down to ions at the noise level because everything else has already been analyzed. It will be harder to determine isotopic envelopes for weaker ion signals.    
+Now the dynamic exclusion is high res with plus/minus 20 PPM in notches over the isotopic envelope. For this to work, the instrument has to be able to determine an isotopic envelope with some fidelity. An M1 trigger does not really affect this, but the charge state call is important. Since the instrument can exclude a precursor with pretty tight mass tolerances, a very similar mass peptide could be selected for an MS2 scan while an excluded peptide is still present. The instrument might co-isolate multiple precursors on purpose. The better dynamic exclusion works, the more problematic data you collect: you can get multiple precursors isolated together, you can get down to ions at the noise level because everything else has already been analyzed. It will be harder to determine isotopic envelopes for weaker ion signals.    
 
 ## Recent papers describing algorithms to correct precursor mass and charge state calls
 
@@ -40,19 +40,19 @@ Now the dynamic exclusion is high res with plus/minus 20 PPM in notches over the
 
 > Rad, R., Li, J., Mintseris, J., O’Connell, J., Gygi, S.P. and Schweppe, D.K., 2020. Improved Monoisotopic Mass Estimation for Deeper Proteome Coverage. Journal of Proteome Research, 20(1), pp.591-598.
 
-All of these papers talk up how the instruments can't get anything right (as mentioned above) and that you get huge gains by using these algorithms. They also like to pick on each other. Being good, skeptical scientists, we should have several questions: are the instruments doing as poorly as suggested? What is the break down on what is broken? How successful are the fixes? How was success defined? How huge is huge? What problem are these algorithms really solving?
+All of these papers talk up how the instruments can't get anything right (as mentioned above) and that you get huge gains by using these algorithms. Being good, skeptical scientists, we should have several questions: are the instruments doing as poorly as suggested? What is the break down on what is broken? How successful are the fixes? How was success defined? How huge is huge? What problem are these algorithms really solving?
 
 They all suffer from some similar issues. They all state (assume) the problems in monoisotopic mass and charge calls are large without demonstrating (in some direct way) that the problems are large. They do not separate and quantify the types of errors in the test datasets and test the algorithm performance on each type of error (an M1 trigger, multiple precursors, etc.). Degree of peptide separation was not explored. More separation usually improves signal-to-noise for precursors (because more sample can be loaded) and reduces the chances for co-eluting peptides. These factors are pretty important to the assumed reasons for using said algorithms. They do not tally what fraction of precursors lack enough information to make corrections. Interestingly, Thermo has acquisition methods that acquire MS2 scans on anything it can if all higher quality precursors have been exhausted and there is still time available in the cycle.
 
-The common way to evaluate an MS1 peak processing algorithm is indirectly by seeing how many peptides and proteins a search engine can identify with and without the algorithm corrections. The first issue is that counting PSMs is the only thing you need to count. The numbers of identified peptide sequences and identified proteins is linearly correlated with the PSM count. Comparing identified peptides and proteins is much more complicated (and dicy) than comparing PSMs and likely causes more confusion than anything. The other issue is that there is a lot of data processing between the MS2 scan and the PSM counting. You have protein database choices, search engine choices, search engine parameter choices, post processing of search scores, target/decoy FDR methods, and protein inference. There is an implied assumption that a narrow tolerance search is the only thing worth evaluating. True wide tolerance searches were not tried in any of these papers.
+The common method used to evaluate the MS1 peak processing algorithms was indirectly by seeing how many peptides and proteins a search engine can identify with and without the algorithm corrections. The first issue is that counting PSMs is the only thing you need to count. The numbers of identified peptide sequences and identified proteins is linearly correlated with the PSM count. Comparing identified peptides and proteins is more complicated (and dicy) than comparing PSMs and likely causes more confusion than clarity. The other issue is that there is a lot of data processing between the MS2 scan and the PSM counting. You have protein database choices, search engine choices, search engine parameter choices, post processing of search scores, target/decoy FDR methods, and protein inference. There is an implied assumption that a narrow tolerance search is the only thing worth evaluating.
 
 While improving PSM identifications at the end of the day is obviously a desirable goal, such an indirect evaluation method sheds little light on the correction algorithms. What are the precursor error characteristics of the data before and after the running the algorithms? Did the algorithms offer advantages over applying the similar fixes built into the search engines (isotopic errors, deamidation, etc.)? All of the papers showed that PSM numbers could be improved when using narrow tolerance searches without really answering the questions of how and why. A low level algorithm should be evaluated at a low level if you really want to understand the problem and its solution.  
 
 ## Monocle paper has data at PRIDE
 
-Monocle is the new kid on the block and was probably developed to facilitate real time search data acquisition. The algorithm was tested on triplet single shot yeast or HeLa cell digests on a Lumos instrument. I skipped the FAIMS data and the TMT-labeled data and repeated analysis of the label-free runs where the survey scans were from the Orbitrap and the MS2 scans were low res ion trap CID. The numbers in the manuscript are more complete for yeast, so I will focus on that.
+Monocle is the new kid on the block and was probably developed to facilitate real time search data acquisition. The algorithm was tested on triplet single shot yeast or HeLa cell digests on a Lumos instrument. I skipped the FAIMS data and the TMT-labeled data and repeated analysis of the label-free runs where the survey scans were from the Orbitrap and the MS2 scans were low res ion trap CID. The numbers in the manuscript are more complete for yeast, so I will focus on that data.
 
-The paper used Comet searches with a 50 PPM parent ion mass tolerance, tryptic cleavage, variable oxidation of Met, and static alkylation of Cys. The 178K spectra were searched with and without monocle pre-processing. Monocle does isotopic envelope modeling based on averagine. It is not clear how (if) modeling of multiple precursors is handled or if a single corrected monoisotopic mass is computed for each MS2 scan. Regardless, monocle pre-processed data resulted in increased PSMs by 81%.
+The paper used Comet searches with a 50 PPM parent ion mass tolerance, tryptic cleavage, variable oxidation of Met, and static alkylation of Cys. The 178K spectra were searched with and without monocle pre-processing. Monocle does isotopic envelope modeling based on averagine. It is not clear how (if) modeling of multiple precursors is handled or if a single corrected monoisotopic mass is computed for each MS2 scan. Regardless, monocle pre-processed data resulted in 81% more PSMs.
 
 ## PAW processing
 
@@ -60,35 +60,35 @@ The wide tolerance PAW searches identify deamidation and M1 triggers without hav
 
 Basic pipeline steps:
 
-1. Convert RAW files with MSConvert
-1. Run Comet search engine
-1. Create top-hit summary files  
-1. Compute delta mass and score histograms
-1. Set 1% FDR thresholds
-1. Write filtered top hit files
-1. Make peptide and protein reports
+- Convert RAW files with MSConvert
+- Run Comet search engine
+- Create top-hit summary files  
+- Compute delta mass and score histograms
+- Set 1% FDR thresholds
+- Write filtered top hit files
+- Make peptide and protein reports
 
 The histogram-based FDR analysis is unique to the PAW pipeline and incorporates a great deal of quality control information naturally into the workflow. Instead of a target/decoy score distribution figure made once for the paper describing a tool, deltamass and score visualizations are integrated into the PAW workflow for every analysis.
 
 Histogram-based FDR steps:
-1. Read top-hit summary files
-1. Filter top-hits by charge (2-4) and length (>7)
-1. Compute deltamass histograms
+- Read top-hit summary files
+- Filter top-hits by charge (2-4) and length (>7)
+- Compute deltamass histograms
   - Separated by charge state
   - MH+ masses in Daltons (never PPM)
   - Full range (-1.25 Da to +1.25 Da [or wider]) plot
   - Expanded plots at 0-Da and 1-Da regions
-1. Set windows on deltamass regions with correct matches
-1. Compute deltamss-conditioned score distributions
-1. Peptides are subclassed by:
+- Set windows on deltamass regions with correct matches
+- Compute deltamss-conditioned score distributions
+- Peptides are subclassed by:
   - Deltamass window
   - Charge state
   - Modification state
   - Number of tryptic termini
-1. Thresholds set in each subclass
+- Thresholds set in each subclass
   - Thresholds are independent and do not have to be the same
   - Usually 1% FDR in all subclasses
-1. Scans passing thresholds are written to new filtered top-hit files
+- Scans passing thresholds are written to new filtered top-hit files
 
 Here is some of the quality control information that is immediately apparent:
 
