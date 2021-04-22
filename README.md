@@ -146,6 +146,18 @@ We could come up with a list of unsupported speculations as to why that might be
 
 There is more going on here, though. We have far fewer "extra" IDs from the 50 PPM search compared to the 1.25 Da search. We also have differences in the score distribution shapes. With 50 PPM, we have a more right-hand-tailed red distribution. That pushes the score threshold up to over 6.0. In the 1.25 Da search, the threshold is around 4.0. This could be that the 50 PPM search is coercing incorrect sequences onto higher quality MS2 spectra resulting in atypically high scoring decoy matches. It can also be partly due to 50 PPM tolerances having few scored peptides for some m/z values. The discriminant function used in PAW has a heavy weighting on the deltaCN term, which can be erratic when there are few scored peptides. This effect is hit and miss as many m/z values will have many matches and some will have small numbers of matches. What ever the reasons, narrow tolerance searches do not recover the inaccurate mass matches as well as wide tolerance searches do.
 
+## M2 trigger breakdown
+
+I did a search with 2.5 Da parent ion tolerance so I could see how many M2 triggers there were. The numbers are in the table below. M2 triggers drop off quickly for this dataset. Note: there are about 58K PSMs in the table instead of 65K because the PSMs outside of the narrow deltamass windows are not included.
+
+Charge|M0|M1|M2|M0 %|M1 %|M2 %
+------|--|--|--|----|----|----
+2+|31,633|4,997|454|85.3%|13.5%|1.2%
+3+|11,537|6,263|1,703|59.2%|32.1%|8.7%
+4+|643|551|223|45.4%|38.9%|15.7%
+Total|43,813|11,811|2,380|75.5%|20.4%|4.1%
+
+
 ## Wrap time
 
 I did not run monocle on the data and process that with my pipeline (I do not have unlimited time - sorry). I think I have made the case that instrument monoisotopic mass mis-calls is only part of the story. Using a narrow tolerance search is also a big part of the issue (as are co-eluting peptides). A wide tolerance search was dramatically better than the narrow tolerance search (keep in mind that some folks think 50 PPM is a wide tolerance) with about half of the gain coming from M1 triggers. The other half came from better recovery of correct IDs, especially those with larger deltamass differences.
